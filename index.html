@@ -3140,7 +3140,7 @@
       const dragRef = useRef({ active: false, baseC: 0, pressedIdx: null, startX: 0, moved: 0, vx: 0, lastX: 0, lastT: 0 });
       const rafRef = useRef(0);
       const clubMeasureRef = useRef(null);  // measures club-card height
-      const CLUB_SCALE = 0.94;  // facing card = this fraction of the special-card width; it FILLS its own (narrower) slot — no transform, so no ghost outline / side-strip bleed, and the side cards peek cleanly (one each side)
+      const CARD_SCALE = 0.92;  // ALL carousel cards (club + special faces) render at this fraction of the old width — a touch smaller AND uniform, so the club card matches the special faces as a side peek (no odd narrow club). Each card fills its own slot → no ghost outline.
       const [stageHeight, setStageHeight] = useState(0);
       const [activeIndex, setActiveIndex] = useState(0);
       // Reveal gate — the stage is opacity:0 until the first measure with a
@@ -3200,16 +3200,12 @@
         if (!stage) return;
         const V = stage.clientWidth;
         if (!V) return;            // stage not laid out yet — wait for the ResizeObserver
-        const W = V - 30;
-        const D = Math.round(V / 2 - 0.46 * W);
+        const W = Math.round((V - 30) * CARD_SCALE);
+        const D = Math.round(V / 2 - 0.46 * W) - 16;   // the -16 insets the side cards from the screen edges so they don't collide with them
         const DRAG = Math.max(1, Math.round(V * 0.40));
         dimsRef.current = { V, W, D, DRAG };
         const slots = stage.querySelectorAll('.carousel-slot');
         slots.forEach((el) => { el.style.width = W + 'px'; el.style.marginLeft = (-W / 2) + 'px'; });
-        // Club card (slot 0) sits a touch narrower than the special faces so it FILLS its own slot
-        // at the smaller size — no transform, so no ghost outline / side-strip bleed, and the side
-        // cards peek cleanly (one each side). Special faces stay full width.
-        if (slots[0]) { const cw = Math.round(W * CLUB_SCALE); slots[0].style.width = cw + 'px'; slots[0].style.marginLeft = (-cw / 2) + 'px'; }
         layout();
         markReady();               // cards are positioned — safe to reveal the stage
       }, [layout, markReady]);
@@ -3516,7 +3512,7 @@
               <p style=${{ fontFamily: 'var(--fd)', fontSize: '16px', color: 'var(--kewpie)', margin: '2px 0 0' }}>${currentReward}</p>
             </div>
             ${!isMaxTier ? html`
-              <div class="tier-progress tier-progress--home" role="button" onClick=${() => onNavigate && onNavigate('rewards')} style=${{ marginTop: '8px', cursor: 'pointer' }}>
+              <div class="tier-progress tier-progress--home" role="button" onClick=${() => onNavigate && onNavigate('rewards')} style=${{ marginTop: '8px', width: '100%', maxWidth: '348px', marginLeft: 'auto', marginRight: 'auto', cursor: 'pointer' }}>
                 <div style=${{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '7px' }}>
                   <span style=${{ fontSize: '12.5px', fontWeight: 700, color: 'var(--kewpie)' }}>${tierCardsLeft} card${tierCardsLeft !== 1 ? 's' : ''} to ${nextTier.name}</span>
                   <span style=${{ fontSize: '10.5px', fontWeight: 600, color: 'var(--wasabi)', display: 'flex', alignItems: 'center', gap: '3px' }}>View rewards <span style=${{ fontSize: '13px', lineHeight: 1 }}>›</span></span>
