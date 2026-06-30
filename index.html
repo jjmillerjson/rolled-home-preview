@@ -1179,6 +1179,8 @@
     .toast.error { border-color: var(--error); color: var(--error); }
     .spinner { width: 24px; height: 24px; border: 2.5px solid var(--wasabi-dim); border-top-color: var(--wasabi); border-radius: 50%; animation: spin 0.6s linear infinite; }
     .loading-screen { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; gap: 14px; }
+    .home-wordmark { height: 30px; display: block; }
+    .loading-wordmark { height: 40px; display: block; margin-bottom: 4px; }
     /* PWA shell sets html/body/#root to overflow:hidden + height:100%, so scroll
        has to live inside this container. Auto margins on first/last child centre
        short content (verify-email, forgot-password) while still scrolling top-
@@ -3441,8 +3443,8 @@
         <div class="screen slide-up" ref=${screenRef}>
           <div class="ptr-indicator ${pulling ? 'active' : ''}"><div class="ptr-spinner"></div></div>
           <div style=${{ marginBottom: '8px' }}>
-            <div class="t-hero">Home</div>
-            <p class="t-body c-muted" style=${{ marginTop: '4px' }}>${displayIsReward ? html`<span class="c-wasabi" style=${{ fontWeight: 700 }}>Your next visit is on us!</span>` : displayStampCount === 0 ? "Collect soy sauce fish with every visit to Rolled!" : html`<span>${displayRemaining} stamp${displayRemaining !== 1 ? 's' : ''} to go</span>`}</p>
+            <img src="rolled-logo.svg" alt="Rolled" class="home-wordmark" />
+            <p class="t-body c-muted" style=${{ marginTop: '6px' }}>${displayIsReward ? html`<span class="c-wasabi" style=${{ fontWeight: 700 }}>Your next visit is on us!</span>` : displayStampCount === 0 ? "Collect soy sauce fish with every visit to Rolled!" : html`<span>${displayRemaining} stamp${displayRemaining !== 1 ? 's' : ''} to go</span>`}</p>
           </div>
 
           ${/* ═══ PHASE 7e — WALLET-STYLE CARD CAROUSEL ═══ */null}
@@ -4083,7 +4085,7 @@
 
       const handleSignOut = () => { clearToken(); _specialCardsCache = []; setProfile(null); setCard(null); setStamps([]); setAuthState('login'); setTab('home'); setShowPrivacy(false); };
 
-      if (authState === 'loading') return html`<div class="app-shell"><div class="loading-screen"><div class="spinner"></div></div></div>`;
+      if (authState === 'loading') return html`<div class="app-shell"><div class="loading-screen"><img src="rolled-logo.svg" alt="Rolled" class="loading-wordmark" /><div class="spinner"></div></div></div>`;
       if (showPrivacy) return html`<div class="app-shell"><${PrivacyPolicyScreen} onBack=${() => setShowPrivacy(false)} /></div>`;
       if (authState === 'login') return html`<div class="app-shell"><${LoginScreen} onLogin=${handleLogin} onSwitch=${() => setAuthState('signup')} onForgot=${() => setAuthState('forgot')} showToast=${showToast} />${ToastEl}</div>`;
       if (authState === 'signup') return html`<div class="app-shell"><${SignupScreen} onSignup=${handleLogin} onSwitch=${() => setAuthState('login')} showToast=${showToast} signupSource=${signupSource} onShowPrivacy=${openPrivacy} marketingCopy=${marketingCopy} />${ToastEl}</div>`;
