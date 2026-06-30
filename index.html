@@ -1338,8 +1338,8 @@
       try {
         const u = String((url && url.url) || url);
         if (u.indexOf(API) !== -1) {
-          if (u.indexOf('/customers/me/card') !== -1) return Promise.resolve(J({ card, stamps }));
-          if (u.indexOf('/customers/me/special-cards') !== -1) return Promise.resolve(J({ cards: SPECIALS }));
+          if (u.indexOf('/customers/me/card') !== -1) { var sc = Math.min(8, SC + (window.__bonus||0)); return Promise.resolve(J({ card: Object.assign({}, card, { stamp_count: sc }), stamps: stamps.slice(0, sc) })); }
+          var NSPEC = parseInt(qp.get('specials')||"7",10); if (u.indexOf('/customers/me/special-cards') !== -1) return Promise.resolve(J({ cards: SPECIALS.slice(0, NSPEC) }));
           if (u.indexOf('/customers/me/history') !== -1) return Promise.resolve(J({ history: [], completed_cards: [] }));
           if (u.indexOf('/customers/me') !== -1) return Promise.resolve(J({ customer: profile }));
           if (u.indexOf('/marketing-copy') !== -1) return Promise.resolve(J({ copy: {} }));
@@ -1350,6 +1350,7 @@
       } catch(e){ console.warn('mock err', e); }
       return realFetch(url, opts);
     };
+    window.__bonus = 0; window.__simScan = function(){ window.__bonus = (window.__bonus||0) + 1; };
     console.log('[MOCK2] installed, tier=', TIER, 'stamps=', SC, 'specials=', SPECIALS.length);
   })();
   </script>
@@ -1370,6 +1371,17 @@
         bar.appendChild(b);
       });
       document.body.appendChild(bar);
+      // demo helper: a 'Simulate scan' button that appears while the on-demand QR is open
+      setInterval(function(){
+        var open = !!document.querySelector('.celebrate-overlay .qr-box');
+        var b = document.getElementById('__simbtn');
+        if (open && !b) {
+          b=document.createElement('button'); b.id='__simbtn'; b.textContent='⚡ Simulate scan';
+          b.style.cssText='position:fixed;left:50%;transform:translateX(-50%);bottom:120px;z-index:99999;border:0;border-radius:16px;padding:11px 18px;background:#fefaf0;color:#00392c;font:700 13px -apple-system,system-ui,sans-serif;box-shadow:0 4px 14px rgba(0,0,0,.4);';
+          b.onclick=function(){ if(window.__simScan) window.__simScan(); };
+          document.body.appendChild(b);
+        } else if (!open && b) { b.remove(); }
+      }, 400);
     }, 250);
   });
   </script>
@@ -3133,6 +3145,21 @@
       onRefreshRef.current = onRefresh;
       useEffect(() => { const interval = setInterval(async () => { if (document.visibilityState === 'visible') { try { await onRefreshRef.current(); } catch {} } }, POLL_INTERVAL); return () => clearInterval(interval); }, []);
       useEffect(() => { const handleVisible = () => { if (document.visibilityState === 'visible') { onRefreshRef.current().catch(() => {}); } }; document.addEventListener('visibilitychange', handleVisible); window.addEventListener('focus', handleVisible); return () => { document.removeEventListener('visibilitychange', handleVisible); window.removeEventListener('focus', handleVisible); }; }, []);
+      // Auto-dismiss the on-demand "Scan to collect" QR the moment the stamp actually lands (staff
+      // scanned it). While the QR is open we poll faster (3s) so the new stamp is caught quickly.
+      const scanOpenStampRef = useRef(null);
+      useEffect(() => {
+        if (!showScanQR) { scanOpenStampRef.current = null; return; }
+        scanOpenStampRef.current = stampCount;
+        const iv = setInterval(() => { if (document.visibilityState === 'visible') onRefreshRef.current().catch(() => {}); }, 3000);
+        return () => clearInterval(iv);
+      }, [showScanQR]);
+      useEffect(() => {
+        if (showScanQR && scanOpenStampRef.current !== null && stampCount > scanOpenStampRef.current) {
+          setShowScanQR(false);
+          showToast('Stamp added — nice one! \u{1F41F}', 'success');
+        }
+      }, [stampCount, showScanQR]);
       const firstName = profile?.first_name || 'mate';
       const loyaltyId = profile?.loyalty_id || '';
 
@@ -3463,7 +3490,7 @@
                     </div>
                   `)}
                 </div>
-                <p style=${{ textAlign: 'center', fontSize: '12px', fontFamily: 'var(--fd)', color: 'var(--kewpie-dim)', marginTop: '2px', paddingBottom: '4px', position: 'relative', zIndex: 5 }}>${displayIsReward ? 'Card fully stamped. Claim your reward next visit' : 'Collect all 8 stamps and unlock your reward, our shout!'}</p>
+                <p style=${{ textAlign: 'center', fontSize: '12px', fontFamily: 'var(--fd)', color: 'var(--kewpie-dim)', marginTop: '2px', paddingBottom: '4px', position: 'relative', zIndex: 5 }}>${displayIsReward ? 'Card fully stamped. Claim your reward next visit' : 'Collect 8 stamps and unlock your reward, our shout!'}</p>
                     </div>
                   </div>
                 </div>
