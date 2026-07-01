@@ -108,18 +108,17 @@
     @keyframes rcHeroIdle { 0%,100% { transform: translateY(0) rotate(-1.4deg); } 50% { transform: translateY(-5px) rotate(1.4deg); } }
     @keyframes rcHeroGlow { 0%,100% { filter: drop-shadow(0 8px 20px rgba(212,251,111,0.3)); } 50% { filter: drop-shadow(0 11px 30px rgba(212,251,111,0.62)); } }
 
-    /* Card Redeemed hero options: tick (replaces fish) / fish→tick morph */
-    .rc-tickcircle { position: absolute; inset: 0; border-radius: 50%; background: var(--wasabi); display: flex; align-items: center; justify-content: center; box-shadow: 0 8px 26px rgba(212,251,111,0.42); opacity: 0; transform: scale(0.3); }
-    .rc-tickcircle svg { width: 52px; height: 52px; }
-    .rc-tickcircle path { stroke: #00392c; stroke-width: 3; fill: none; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 40; stroke-dashoffset: 40; }
+    /* Card Redeemed hero — wasabi disc + tick, with an optional branded pattern */
+    .rc-tickcircle { position: absolute; inset: 0; border-radius: 50%; overflow: hidden; background: var(--wasabi); display: flex; align-items: center; justify-content: center; box-shadow: 0 8px 26px rgba(212,251,111,0.42); opacity: 0; transform: scale(0.3); }
     .rc-tickcircle--solo { animation: rcHeroPop 0.55s cubic-bezier(0.34,1.56,0.64,1) 0.1s forwards; }
-    .rc-tickcircle--solo path { animation: rcTick 0.5s ease 0.55s forwards; }
-    .rc-tickcircle--morphin { animation: rcTickIn 0.5s cubic-bezier(0.34,1.56,0.64,1) 0.92s forwards; }
-    .rc-tickcircle--morphin path { animation: rcTick 0.5s ease 1.34s forwards; }
-    @keyframes rcTickIn { 0% { opacity: 0; transform: scale(0.4) rotate(-12deg); } 100% { opacity: 1; transform: scale(1) rotate(0); } }
-    .rc-hero--morphout { animation: rcHeroPop 0.55s cubic-bezier(0.34,1.56,0.64,1) 0.1s forwards, rcFishOut 0.45s ease 0.95s forwards; }
-    @keyframes rcFishOut { to { opacity: 0; transform: scale(0.55); } }
+    .rc-tick-mark { width: 52px; height: 52px; position: relative; z-index: 2; }
+    .rc-tick-mark path { stroke: #00392c; stroke-width: 3; fill: none; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 40; stroke-dashoffset: 40; animation: rcTick 0.5s ease 0.6s forwards; }
     @keyframes rcTick { to { stroke-dashoffset: 0; } }
+    .rc-tick-pat { position: absolute; inset: 0; z-index: 1; overflow: hidden; border-radius: 50%; opacity: 0; animation: rcPatIn 0.6s ease 0.38s forwards; }
+    @keyframes rcPatIn { to { opacity: 1; } }
+    .rc-tick-pat--fish svg { position: absolute; top: 50%; left: 50%; width: 82%; height: auto; transform: translate(-50%,-50%); }
+    .rc-tick-pat--waves .rc-wavedrift { animation: rcWaveDrift 7s linear infinite; }
+    @keyframes rcWaveDrift { to { transform: translateX(-50px); } }
 
     /* rings (Fan + Shoal) */
     .rc-ring { position: absolute; top: 50%; left: 50%; width: 104px; height: 104px; margin: -52px 0 0 -52px; border: 2.5px solid rgba(212,251,111,0.75); border-radius: 50%; opacity: 0; animation: rcRing 0.75s ease-out 0.2s forwards; }
@@ -232,7 +231,7 @@
     const TIERS = ['standard','silver','gold','platinum','diamond'];
     const EFFECTS = [['rising','Rising'],['shoal','Shoal'],['ripple','Ripple'],['fan','Fan']];
     const REWARD_STYLES = [['plate','Plate'],['ticket','Ticket'],['outline','Outline'],['block','Block']];
-    const REDEEM_HEROES = [['tick','Tick'],['morph','Fish→Tick'],['fish','Fish']];
+    const TICK_STYLES = [['waves','Waves'],['fish','Fish'],['plain','Plain']];
     const ANIMS = [['celeb','8/8 Celebration'],['redeem','Card Redeemed']];
 
     // ═══════════ BEFORE: 8/8 celebration (current live app) ═══════════
@@ -353,13 +352,12 @@
     }
 
     // ═══════════ AFTER: Card Redeemed (new — inherits language, calmer) ═══════════
-    function RedeemHero({ kind }) {
-      if (kind === 'tick') return html`<div class="rc-heroidle"><div class="rc-tickcircle rc-tickcircle--solo"><svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></div></div>`;
-      if (kind === 'fish') return html`<div class="rc-heroidle"><div class="rc-hero"><${SoyFish} /></div></div>`;
-      return html`<div class="rc-heroidle">
-        <div class="rc-hero rc-hero--morphout"><${SoyFish} /></div>
-        <div class="rc-tickcircle rc-tickcircle--morphin"><svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></div>
-      </div>`;
+    function RedeemHero({ style }) {
+      return html`<div class="rc-heroidle"><div class="rc-tickcircle rc-tickcircle--solo">
+        ${style === 'waves' ? html`<div class="rc-tick-pat rc-tick-pat--waves"><svg viewBox="0 0 100 100" preserveAspectRatio="xMidYMid slice" style=${{ width:'100%', height:'100%' }}><g class="rc-wavedrift" stroke="#00392c" stroke-opacity="0.14" fill="none" stroke-width="2.4" stroke-linecap="round"><path d="M-30,22 Q-5,14 20,22 Q45,30 70,22 Q95,14 120,22"/><path d="M-30,40 Q-5,32 20,40 Q45,48 70,40 Q95,32 120,40"/><path d="M-30,58 Q-5,50 20,58 Q45,66 70,58 Q95,50 120,58"/><path d="M-30,76 Q-5,68 20,76 Q45,84 70,76 Q95,68 120,76"/></g></svg></div>` : null}
+        ${style === 'fish' ? html`<div class="rc-tick-pat rc-tick-pat--fish"><svg viewBox="0 0 823.78 481.7"><path d=${FISH_BODY} fill="#00392c" fill-opacity="0.15"/></svg></div>` : null}
+        <svg class="rc-tick-mark" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>
+      </div></div>`;
     }
     function RedeemTierProgress({ tier }) {
       const [filled, setFilled] = useState(false);
@@ -383,7 +381,7 @@
         </div>
       </div>`;
     }
-    function AfterRedeemed({ tier, hero, onClose }) {
+    function AfterRedeemed({ tier, tickStyle, onClose }) {
       const [fading, setFading] = useState(false);
       const close = () => { setFading(true); setTimeout(onClose, 350); };
       const sparks = Array.from({ length: 6 }, (_, i) => { const ang = (i/6)*Math.PI*2 + 0.5; const d = 64 + ((i*41)%70); return { x: Math.cos(ang)*d, y: Math.sin(ang)*d - 8, size: 7 + ((i*11)%7), delay: 0.4 + (i%5)*0.09 }; });
@@ -394,7 +392,7 @@
             ${[0,1,2].map(i => html`<div key=${'rp'+i} class="rc-ripple" style=${{ animationDelay: (i*0.26) + 's' }}></div>`)}
             ${sparks.map((s, i) => html`<div key=${'sp'+i} class="rc-spark" style=${{ '--x': s.x+'px', '--y': s.y+'px', fontSize: s.size+'px', animationDelay: s.delay+'s' }}>✦</div>`)}
           </div>
-          <${RedeemHero} kind=${hero} />
+          <${RedeemHero} style=${tickStyle} />
         </div>
         <div class="rc-title rc-title--redeem">Card Redeemed!</div>
         <div class="rc-sub">Nice one, ${FIRST_NAME}, enjoy your free sushi!</div>
@@ -409,7 +407,7 @@
       const [tier, setTier] = useState('standard');
       const [effect, setEffect] = useState('rising');
       const [rstyle, setRstyle] = useState('plate');
-      const [rhero, setRhero] = useState('tick');
+      const [rtick, setRtick] = useState('waves');
       const [anim, setAnim] = useState('redeem');
       const [active, setActive] = useState(null);
       const runRef = useRef(0);
@@ -421,7 +419,7 @@
         if (k === 'celeb-before') return html`<${BeforeCelebration} key=${'cb'+r} onClose=${close} />`;
         if (k === 'celeb-after') return html`<${AfterCelebration} key=${'ca'+r} tier=${tier} variant=${effect} rstyle=${rstyle} onClose=${close} />`;
         if (k === 'redeem-before') return html`<${BeforeRedeemed} key=${'rb'+r} tier=${tier} onClose=${close} />`;
-        if (k === 'redeem-after') return html`<${AfterRedeemed} key=${'ra'+r} tier=${tier} hero=${rhero} onClose=${close} />`;
+        if (k === 'redeem-after') return html`<${AfterRedeemed} key=${'ra'+r} tier=${tier} tickStyle=${rtick} onClose=${close} />`;
         return null;
       };
       return html`<div class="lab">
@@ -446,8 +444,8 @@
             <div class="lab-cap">Reward style</div>
             <div class="chiprow">${REWARD_STYLES.map(([k, label]) => html`<div key=${k} class="chip ${rstyle===k?'is-on':''}" onClick=${() => setRstyle(k)}>${label}</div>`)}</div>
           ` : html`
-            <div class="lab-cap">Redeem hero</div>
-            <div class="chiprow">${REDEEM_HEROES.map(([k, label]) => html`<div key=${k} class="chip ${rhero===k?'is-on':''}" onClick=${() => setRhero(k)}>${label}</div>`)}</div>
+            <div class="lab-cap">Tick style</div>
+            <div class="chiprow">${TICK_STYLES.map(([k, label]) => html`<div key=${k} class="chip ${rtick===k?'is-on':''}" onClick=${() => setRtick(k)}>${label}</div>`)}</div>
           `}
           <div class="lab-cap">Tier reward</div>
           <div class="chiprow">${TIERS.map(t => html`<div key=${t} class="chip ${tier===t?'is-on':''}" onClick=${() => setTier(t)}>${cap(t)}</div>`)}</div>
