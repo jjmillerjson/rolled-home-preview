@@ -108,6 +108,19 @@
     @keyframes rcHeroIdle { 0%,100% { transform: translateY(0) rotate(-1.4deg); } 50% { transform: translateY(-5px) rotate(1.4deg); } }
     @keyframes rcHeroGlow { 0%,100% { filter: drop-shadow(0 8px 20px rgba(212,251,111,0.3)); } 50% { filter: drop-shadow(0 11px 30px rgba(212,251,111,0.62)); } }
 
+    /* Card Redeemed hero options: tick (replaces fish) / fish→tick morph */
+    .rc-tickcircle { position: absolute; inset: 0; border-radius: 50%; background: var(--wasabi); display: flex; align-items: center; justify-content: center; box-shadow: 0 8px 26px rgba(212,251,111,0.42); opacity: 0; transform: scale(0.3); }
+    .rc-tickcircle svg { width: 52px; height: 52px; }
+    .rc-tickcircle path { stroke: #00392c; stroke-width: 3; fill: none; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 40; stroke-dashoffset: 40; }
+    .rc-tickcircle--solo { animation: rcHeroPop 0.55s cubic-bezier(0.34,1.56,0.64,1) 0.1s forwards; }
+    .rc-tickcircle--solo path { animation: rcTick 0.5s ease 0.55s forwards; }
+    .rc-tickcircle--morphin { animation: rcTickIn 0.5s cubic-bezier(0.34,1.56,0.64,1) 0.92s forwards; }
+    .rc-tickcircle--morphin path { animation: rcTick 0.5s ease 1.34s forwards; }
+    @keyframes rcTickIn { 0% { opacity: 0; transform: scale(0.4) rotate(-12deg); } 100% { opacity: 1; transform: scale(1) rotate(0); } }
+    .rc-hero--morphout { animation: rcHeroPop 0.55s cubic-bezier(0.34,1.56,0.64,1) 0.1s forwards, rcFishOut 0.45s ease 0.95s forwards; }
+    @keyframes rcFishOut { to { opacity: 0; transform: scale(0.55); } }
+    @keyframes rcTick { to { stroke-dashoffset: 0; } }
+
     /* rings (Fan + Shoal) */
     .rc-ring { position: absolute; top: 50%; left: 50%; width: 104px; height: 104px; margin: -52px 0 0 -52px; border: 2.5px solid rgba(212,251,111,0.75); border-radius: 50%; opacity: 0; animation: rcRing 0.75s ease-out 0.2s forwards; }
     .rc-ring2 { border-color: rgba(254,250,240,0.35); animation-delay: 0.34s; }
@@ -122,13 +135,6 @@
     @keyframes rcRippleK { 0% { opacity: 0.85; transform: scale(0.35); } 100% { opacity: 0; transform: scale(4.6); } }
     .rc-spark { position: absolute; top: 50%; left: 50%; color: #fff; opacity: 0; line-height: 1; animation: rcSpark 1.1s ease-in-out forwards; text-shadow: 0 0 6px rgba(212,251,111,0.8); }
     @keyframes rcSpark { 0% { opacity: 0; transform: translate(calc(-50% + var(--x)), calc(-50% + var(--y))) scale(0.2) rotate(0deg); } 45% { opacity: 1; transform: translate(calc(-50% + var(--x)), calc(-50% + var(--y))) scale(1) rotate(35deg); } 100% { opacity: 0; transform: translate(calc(-50% + var(--x)), calc(-50% + var(--y))) scale(0.4) rotate(60deg); } }
-
-    /* claimed ✓ badge (Card Redeemed) */
-    .rc-check { position: absolute; right: -2px; bottom: 8px; width: 38px; height: 38px; border-radius: 50%; background: var(--wasabi); display: flex; align-items: center; justify-content: center; box-shadow: 0 5px 16px rgba(0,20,12,0.45); opacity: 0; transform: scale(0); animation: rcCheckPop 0.5s cubic-bezier(0.34,1.56,0.64,1) 0.42s forwards; z-index: 6; }
-    @keyframes rcCheckPop { 0% { opacity: 0; transform: scale(0) rotate(-25deg); } 60% { opacity: 1; transform: scale(1.18) rotate(6deg); } 100% { opacity: 1; transform: scale(1) rotate(0); } }
-    .rc-check svg { width: 20px; height: 20px; }
-    .rc-check path { stroke: #00392c; stroke-width: 3.2; fill: none; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 26; stroke-dashoffset: 26; animation: rcTick 0.4s ease 0.72s forwards; }
-    @keyframes rcTick { to { stroke-dashoffset: 0; } }
 
     .rc-title { font-family: var(--fd); font-size: 50px; line-height: 1; font-weight: 700; color: var(--wasabi); margin-top: 16px; opacity: 0; transform: scale(0.5); animation: rcTitle 0.6s cubic-bezier(0.34,1.56,0.64,1) 0.5s forwards; position: relative; z-index: 3; text-shadow: 0 2px 26px rgba(212,251,111,0.28); }
     .rc-title--redeem { font-size: 40px; }
@@ -151,13 +157,25 @@
     .rw-plate .rw-val { font-family: var(--fd); font-size: 27px; font-weight: 700; color: var(--wasabi); line-height: 1.12; text-shadow: 0 2px 20px rgba(212,251,111,0.25); max-width: 300px; }
     .rw-plate .rw-rule { width: 46px; height: 3px; border-radius: 2px; background: var(--wasabi); margin: 13px auto 0; box-shadow: 0 0 12px rgba(212,251,111,0.55); }
 
-    /* redeemed tier chip + progress */
-    .rc-tierchip { margin-top: 18px; display: inline-flex; align-items: center; gap: 8px; padding: 9px 16px; border-radius: 30px; background: rgba(254,250,240,0.06); border: 1px solid var(--kewpie-faint); opacity: 0; animation: rcUp 0.4s ease 1.15s forwards; position: relative; z-index: 3; }
-    .rc-tierchip span { font-family: var(--fb); font-size: 13px; font-weight: 700; }
-    .rc-tierprog { margin-top: 12px; width: 214px; opacity: 0; animation: rcUp 0.4s ease 1.32s forwards; position: relative; z-index: 3; }
-    .rc-tierbar { height: 5px; border-radius: 3px; background: rgba(254,250,240,0.1); overflow: hidden; }
-    .rc-tierbar > i { display: block; height: 100%; border-radius: 3px; }
-    .rc-tierprog p { font-family: var(--fb); font-size: 10.5px; color: var(--kewpie-muted); margin-top: 6px; }
+    /* Card Redeemed — homepage-style tier progression (animated forward) */
+    .rc-tp { margin-top: 20px; width: 252px; opacity: 0; animation: rcUp 0.4s ease 1.2s forwards; position: relative; z-index: 3; }
+    .rc-tp-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+    .rc-tp-lbl { font-family: var(--fb); font-size: 13px; font-weight: 700; color: var(--kewpie); }
+    .rc-tp-plus { font-family: var(--fb); font-size: 9.5px; font-weight: 800; letter-spacing: 0.4px; text-transform: uppercase; color: var(--nori); background: var(--wasabi); border-radius: 20px; padding: 2px 8px; opacity: 0; transform: scale(0.6); }
+    .rc-tp-plus.is-on { animation: rcPlusPop 0.4s cubic-bezier(0.34,1.56,0.64,1) forwards; }
+    @keyframes rcPlusPop { 0% { opacity: 0; transform: scale(0.6); } 60% { opacity: 1; transform: scale(1.12); } 100% { opacity: 1; transform: scale(1); } }
+    .rc-tp-barrow { display: flex; align-items: center; gap: 10px; }
+    .rc-tp--max { flex-direction: row; justify-content: center; gap: 8px; }
+    .rc-tp--max span { font-family: var(--fb); font-size: 13px; font-weight: 700; color: var(--diamond); }
+    .tier-progress-bar { height: 5px; background: rgba(254,250,240,0.12); border-radius: 3px; overflow: hidden; position: relative; }
+    .tier-progress-fill { height: 100%; border-radius: 3px; position: relative; overflow: hidden; }
+    .tier-progress-fill::after { content: ''; position: absolute; inset: 0; background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.4) 50%, transparent 100%); animation: tierSweep 2.5s ease-in-out infinite; }
+    @keyframes tierSweep { 0% { transform: translateX(-100%); } 100% { transform: translateX(200%); } }
+    .tier-goal-roo { position: relative; display: inline-flex; flex: none; }
+    .tgr-spark { position: absolute; color: #fff; font-size: 7px; opacity: 0; animation: tgrTwinkle 2.6s ease-in-out infinite; pointer-events: none; }
+    .tgr-spark--a { top: -3px; right: -4px; animation-delay: 0.2s; }
+    .tgr-spark--b { bottom: -2px; left: -3px; font-size: 5px; animation-delay: 1.2s; }
+    @keyframes tgrTwinkle { 0%, 100% { opacity: 0; transform: scale(0.4); } 45% { opacity: 1; transform: scale(1); } 65% { opacity: 0; transform: scale(0.5); } }
 
     .rc-msg { font-family: var(--fb); font-size: 13px; color: var(--kewpie-dim); margin-top: 15px; max-width: 285px; line-height: 1.55; opacity: 0; animation: rcUp 0.4s ease 1.42s forwards; position: relative; z-index: 3; }
     .rc-btn { margin-top: 22px; font-family: var(--fb); font-size: 14px; font-weight: 700; color: var(--kewpie); background: none; border: 1.5px solid rgba(254,250,240,0.28); border-radius: 12px; padding: 12px 40px; cursor: pointer; opacity: 0; animation: rcUp 0.4s ease 1.6s forwards; position: relative; z-index: 3; }
@@ -188,16 +206,33 @@
     function RooIcon({ color = '#d4fb6f', size = 22 }) {
       return html`<svg viewBox="0 0 459.53 399.43" width=${size} height=${size*0.87} xmlns="http://www.w3.org/2000/svg" style=${{ display:'block' }}><g fill=${color}>${ROO_PATHS.map((d,i)=>html`<path key=${i} d=${d} />`)}</g></svg>`;
     }
+    function TierGoalRoo({ color = '#d4fb6f' }) {
+      return html`<span class="tier-goal-roo">
+        <svg viewBox="0 0 459.53 399.43" width="24" height="21" xmlns="http://www.w3.org/2000/svg" style=${{ display:'block' }}>
+          <defs><linearGradient id="tgrSheen" gradientUnits="objectBoundingBox" x1="0" x2="1">
+            <stop offset="0.28" stop-color=${color}></stop><stop offset="0.5" stop-color="#ffffff"></stop><stop offset="0.72" stop-color=${color}></stop>
+            <animateTransform attributeName="gradientTransform" type="translate" from="-1 0" to="1 0" dur="2.6s" repeatCount="indefinite"></animateTransform>
+          </linearGradient></defs>
+          <g fill="url(#tgrSheen)">${ROO_PATHS.map((d, i) => html`<path key=${i} d=${d}></path>`)}</g>
+        </svg>
+        <span class="tgr-spark tgr-spark--a">${'✦'}</span>
+        <span class="tgr-spark tgr-spark--b">${'✦'}</span>
+      </span>`;
+    }
 
     const CONFETTI_COLORS = ['#d4fb6f', '#fefaf0', '#D4A017', '#4ade80', '#B9F2FF'];
     const REWARD_LADDER = { standard: '2 Free Rolls', silver: '2 Free Rolls + Any Dip', gold: '2 Free Rolls + Aussie Snack', platinum: '3 Free Rolls + Any Dip', diamond: '4 Free Rolls or 3 Free Rolls + Drink' };
     const TIER_COLORS = { silver:'#A8A9AD', gold:'#D4A017', platinum:'#B0C4DE', diamond:'#B9F2FF' };
     const TIER_ORDER = ['standard','silver','gold','platinum','diamond'];
+    const TIER_TH = { standard:0, silver:3, gold:7, platinum:15, diamond:25 };
+    const MOCK_COMPLETED = { standard:2, silver:5, gold:12, platinum:22 };
     const nextTierOf = (t) => { const i = TIER_ORDER.indexOf(t); return i>=0 && i<TIER_ORDER.length-1 ? TIER_ORDER[i+1] : null; };
     const cap = (s) => s ? s.charAt(0).toUpperCase()+s.slice(1) : s;
+    const FIRST_NAME = 'JJ';
     const TIERS = ['standard','silver','gold','platinum','diamond'];
     const EFFECTS = [['rising','Rising'],['shoal','Shoal'],['ripple','Ripple'],['fan','Fan']];
     const REWARD_STYLES = [['plate','Plate'],['ticket','Ticket'],['outline','Outline'],['block','Block']];
+    const REDEEM_HEROES = [['tick','Tick'],['morph','Fish→Tick'],['fish','Fish']];
     const ANIMS = [['celeb','8/8 Celebration'],['redeem','Card Redeemed']];
 
     // ═══════════ BEFORE: 8/8 celebration (current live app) ═══════════
@@ -317,13 +352,40 @@
       </div>`;
     }
 
-    // ═══════════ AFTER: Card Redeemed (new — inherits the language, calmer) ═══════════
-    function AfterRedeemed({ tier, onClose }) {
+    // ═══════════ AFTER: Card Redeemed (new — inherits language, calmer) ═══════════
+    function RedeemHero({ kind }) {
+      if (kind === 'tick') return html`<div class="rc-heroidle"><div class="rc-tickcircle rc-tickcircle--solo"><svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></div></div>`;
+      if (kind === 'fish') return html`<div class="rc-heroidle"><div class="rc-hero"><${SoyFish} /></div></div>`;
+      return html`<div class="rc-heroidle">
+        <div class="rc-hero rc-hero--morphout"><${SoyFish} /></div>
+        <div class="rc-tickcircle rc-tickcircle--morphin"><svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></div>
+      </div>`;
+    }
+    function RedeemTierProgress({ tier }) {
+      const [filled, setFilled] = useState(false);
+      useEffect(() => { const t = setTimeout(() => setFilled(true), 1550); return () => clearTimeout(t); }, []);
+      const next = nextTierOf(tier);
+      if (!next) return html`<div class="rc-tp rc-tp--max" style=${{ display:'flex', alignItems:'center' }}><${TierGoalRoo} color=${TIER_COLORS.diamond} /><span>Top tier — you're a Diamond legend!</span></div>`;
+      const curTh = TIER_TH[tier] || 0, nextTh = TIER_TH[next], completed = MOCK_COMPLETED[tier];
+      const span = nextTh - curTh, toCards = nextTh - completed;
+      const toPct = Math.max(6, Math.round((completed - curTh) / span * 100));
+      const fromPct = Math.max(6, Math.round((completed - 1 - curTh) / span * 100));
+      const nextColor = TIER_COLORS[next] || 'var(--wasabi)';
+      const shown = filled ? toCards : toCards + 1;
+      return html`<div class="rc-tp">
+        <div class="rc-tp-row">
+          <span class="rc-tp-lbl">${shown} card${shown!==1?'s':''} to ${cap(next)}</span>
+          <span class="rc-tp-plus ${filled?'is-on':''}">+1 card</span>
+        </div>
+        <div class="rc-tp-barrow">
+          <div class="tier-progress-bar" style=${{ flex:1 }}><div class="tier-progress-fill" style=${{ width: (filled?toPct:fromPct)+'%', background: nextColor, transition: 'width 0.9s cubic-bezier(0.22,1,0.36,1)' }}></div></div>
+          <${TierGoalRoo} color=${nextColor} />
+        </div>
+      </div>`;
+    }
+    function AfterRedeemed({ tier, hero, onClose }) {
       const [fading, setFading] = useState(false);
       const close = () => { setFading(true); setTimeout(onClose, 350); };
-      const hasTier = tier !== 'standard';
-      const tierColor = TIER_COLORS[tier] || 'var(--wasabi)';
-      const nt = nextTierOf(tier);
       const sparks = Array.from({ length: 6 }, (_, i) => { const ang = (i/6)*Math.PI*2 + 0.5; const d = 64 + ((i*41)%70); return { x: Math.cos(ang)*d, y: Math.sin(ang)*d - 8, size: 7 + ((i*11)%7), delay: 0.4 + (i%5)*0.09 }; });
       return html`<div class="rc-overlay ${fading ? 'overlay-fading' : ''}">
         <div class="rc-herowrap">
@@ -332,17 +394,13 @@
             ${[0,1,2].map(i => html`<div key=${'rp'+i} class="rc-ripple" style=${{ animationDelay: (i*0.26) + 's' }}></div>`)}
             ${sparks.map((s, i) => html`<div key=${'sp'+i} class="rc-spark" style=${{ '--x': s.x+'px', '--y': s.y+'px', fontSize: s.size+'px', animationDelay: s.delay+'s' }}>✦</div>`)}
           </div>
-          <div class="rc-heroidle">
-            <div class="rc-hero"><${SoyFish} /></div>
-            <div class="rc-check"><svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></div>
-          </div>
+          <${RedeemHero} kind=${hero} />
         </div>
         <div class="rc-title rc-title--redeem">Card Redeemed!</div>
-        <div class="rc-sub">Nice one, mate — enjoy your free rolls.</div>
-        <div class="rc-msg" style=${{ animation: 'rcUp 0.4s ease 1.0s forwards', marginTop: '12px' }}>Your fresh card's ready — let's fill it up again.</div>
-        ${hasTier ? html`<div class="rc-tierchip"><${RooIcon} color=${tierColor} size=${20} /><span style=${{ color: tierColor }}>${cap(tier)} Member</span></div>` : null}
-        ${nt ? html`<div class="rc-tierprog"><div class="rc-tierbar"><i style=${{ width: '55%', background: hasTier?tierColor:'var(--wasabi)' }}></i></div><p>3 more cards to ${cap(nt)}</p></div>` : null}
-        <button class="rc-btn" style=${{ animation: 'rcUp 0.4s ease 1.5s forwards' }} onClick=${close}>Let's go!</button>
+        <div class="rc-sub">Nice one, ${FIRST_NAME}, enjoy your free sushi!</div>
+        <div class="rc-msg" style=${{ animation: 'rcUp 0.4s ease 1.0s forwards', marginTop: '12px' }}>You've received a fresh Club Card and a stamp</div>
+        <${RedeemTierProgress} tier=${tier} />
+        <button class="rc-btn" style=${{ animation: 'rcUp 0.4s ease 1.9s forwards' }} onClick=${close}>Let's go!</button>
       </div>`;
     }
 
@@ -351,7 +409,8 @@
       const [tier, setTier] = useState('standard');
       const [effect, setEffect] = useState('rising');
       const [rstyle, setRstyle] = useState('plate');
-      const [anim, setAnim] = useState('celeb');
+      const [rhero, setRhero] = useState('tick');
+      const [anim, setAnim] = useState('redeem');
       const [active, setActive] = useState(null);
       const runRef = useRef(0);
       const play = (kind) => { runRef.current += 1; setActive({ kind, run: runRef.current }); };
@@ -362,7 +421,7 @@
         if (k === 'celeb-before') return html`<${BeforeCelebration} key=${'cb'+r} onClose=${close} />`;
         if (k === 'celeb-after') return html`<${AfterCelebration} key=${'ca'+r} tier=${tier} variant=${effect} rstyle=${rstyle} onClose=${close} />`;
         if (k === 'redeem-before') return html`<${BeforeRedeemed} key=${'rb'+r} tier=${tier} onClose=${close} />`;
-        if (k === 'redeem-after') return html`<${AfterRedeemed} key=${'ra'+r} tier=${tier} onClose=${close} />`;
+        if (k === 'redeem-after') return html`<${AfterRedeemed} key=${'ra'+r} tier=${tier} hero=${rhero} onClose=${close} />`;
         return null;
       };
       return html`<div class="lab">
@@ -386,7 +445,10 @@
             <div class="chiprow">${EFFECTS.map(([k, label]) => html`<div key=${k} class="chip ${effect===k?'is-on':''}" onClick=${() => setEffect(k)}>${label}</div>`)}</div>
             <div class="lab-cap">Reward style</div>
             <div class="chiprow">${REWARD_STYLES.map(([k, label]) => html`<div key=${k} class="chip ${rstyle===k?'is-on':''}" onClick=${() => setRstyle(k)}>${label}</div>`)}</div>
-          ` : null}
+          ` : html`
+            <div class="lab-cap">Redeem hero</div>
+            <div class="chiprow">${REDEEM_HEROES.map(([k, label]) => html`<div key=${k} class="chip ${rhero===k?'is-on':''}" onClick=${() => setRhero(k)}>${label}</div>`)}</div>
+          `}
           <div class="lab-cap">Tier reward</div>
           <div class="chiprow">${TIERS.map(t => html`<div key=${t} class="chip ${tier===t?'is-on':''}" onClick=${() => setTier(t)}>${cap(t)}</div>`)}</div>
           <div class="lab-next">Up next · Tier-up</div>
