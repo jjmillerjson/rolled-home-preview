@@ -254,6 +254,15 @@
     @keyframes tupSheen { to { left: 108%; } }
     .tup-badge-new { animation: tupBadgePop 0.4s cubic-bezier(0.34,1.56,0.64,1) 0.98s both; }
     @keyframes tupBadgePop { 0% { transform: scale(0.6); opacity: 0; } 60% { transform: scale(1.12); opacity: 1; } 100% { transform: scale(1); opacity: 1; } }
+    /* stamp reset (8/8 → 1 fresh) */
+    @keyframes tuStampOut { to { opacity: 0; transform: scale(0.4); } }
+    .tu-clearout { animation: tuStampOut 0.5s ease forwards; }
+    /* Flip style */
+    .tup-flip { animation: tupFlip 0.9s cubic-bezier(0.5,0,0.3,1) forwards; }
+    @keyframes tupFlip { 0% { transform: scaleX(1); } 44% { transform: scaleX(0.05); } 56% { transform: scaleX(0.05); } 100% { transform: scaleX(1); } }
+    /* Shake style flash */
+    .tup-flash { position: absolute; inset: 0; z-index: 8; pointer-events: none; border-radius: var(--r-xl); opacity: 0; background: radial-gradient(circle at 50% 45%, rgba(255,255,255,0.9), rgba(212,251,111,0.35) 40%, transparent 72%); animation: tupFlash 0.6s ease forwards; }
+    @keyframes tupFlash { 0% { opacity: 0; transform: scale(0.85); } 28% { opacity: 1; } 100% { opacity: 0; transform: scale(1.12); } }
   </style>
 </head>
 <body>
@@ -308,6 +317,7 @@
     const TICK_STYLES = [['waves','Waves'],['fish','Fish'],['plain','Plain']];
     const ANIMS = [['celeb','8/8'],['redeem','Redeemed'],['tierup','Tier-up']];
     const TU_PLAYS = [['MA','Morph→Ann'],['AM','Ann→Morph'],['morph','Morph'],['announce','Announce']];
+    const MORPH_STYLES = [['polish','Polish'],['shake','Shake'],['flip','Flip']];
 
     // ═══════════ BEFORE: 8/8 celebration (current live app) ═══════════
     function CelebrationConfetti() {
@@ -573,16 +583,34 @@
     // REFRESHED morph — the on-card level-up, rebuilt: snappy (~2.6s) + a clean
     // texture crossfade (old header fades out to reveal the new one underneath —
     // no flickery overlay-then-swap).
-    function TierUpMorph({ tier, onClose, onDone }) {
+    function TierUpMorph({ tier, style='polish', onClose, onDone }) {
       const toTier = tier === 'standard' ? 'silver' : tier;
       const fromTier = prevTierOf(toTier);
-      const glowRef = useRef(null);
       const col = TIER_COLORS[toTier] || '#d4fb6f';
+      const [showNew, setShowNew] = useState(false);
+      const [smode, setSmode] = useState('full');           // full(8) → clearing → fresh(1)
+      const [fx, setFx] = useState(style === 'shake' ? 'shake' : '');
+      const glowRef = useRef(null);
       useEffect(() => {
-        const timers = [];
-        timers.push(setTimeout(() => { if (glowRef.current){ glowRef.current.style.transition='opacity 0.5s'; glowRef.current.style.opacity='0'; } }, 1350));
-        timers.push(setTimeout(() => { onDone && onDone(); }, 1900));
-        return () => timers.forEach(clearTimeout);
+        const T = [];
+        const fadeGlow = (ms) => T.push(setTimeout(() => { if (glowRef.current){ glowRef.current.style.transition='opacity 0.5s'; glowRef.current.style.opacity='0'; } }, ms));
+        if (style === 'flip') {
+          T.push(setTimeout(() => { setShowNew(true); setSmode('fresh'); }, 420));
+          fadeGlow(950);
+          T.push(setTimeout(() => { onDone && onDone(); }, 1250));
+        } else if (style === 'shake') {
+          T.push(setTimeout(() => setFx('intense'), 520));
+          T.push(setTimeout(() => { setFx('release'); setShowNew(true); setSmode('clearing'); }, 950));
+          T.push(setTimeout(() => setSmode('fresh'), 1350));
+          fadeGlow(1500);
+          T.push(setTimeout(() => { onDone && onDone(); }, 2000));
+        } else {
+          T.push(setTimeout(() => setSmode('clearing'), 800));
+          T.push(setTimeout(() => setSmode('fresh'), 1450));
+          fadeGlow(1400);
+          T.push(setTimeout(() => { onDone && onDone(); }, 1900));
+        }
+        return () => T.forEach(clearTimeout);
       }, []);
       const hdr = (t, isNew) => html`<div class="card-header card-header--${t} ${isNew?'tuh-new':''}">
         ${t==='standard' ? html`<${WaveLines} />` : null}
@@ -590,32 +618,35 @@
         ${t!=='standard' ? html`<div class="card-header-shimmer card-header-shimmer--${t}"><div class="shim1"></div></div>` : null}
         <div class="card-header-content"><div><span class="card-header-title">Rolled Club Card</span><span class="card-header-name">${FIRST_NAME}</span></div>${t!=='standard' ? html`<span class="card-tier-badge ${isNew?'tup-badge-new':''}">${cap(t)}</span>` : null}</div>
       </div>`;
-      return html`<div class="tu-stage" onClick=${onClose}><div class="tup-lift" style=${{ position:'relative', width:'320px', maxWidth:'86vw' }}>
+      const wrapCls = style === 'flip' ? 'tup-flip' : 'tup-lift';
+      const stampCls = (i) => smode==='clearing' ? 'tu-clearout' : (smode==='full' && style==='shake') ? (fx==='intense'?'stamp-wiggle-intense':'stamp-wiggle') : '';
+      const stampSt = (i) => (smode==='fresh' && i===0) ? { animation:'stampPop 0.5s cubic-bezier(0.34,1.56,0.64,1) both' } : (smode==='clearing' ? { animationDelay:(i*0.03)+'s' } : {});
+      return html`<div class="tu-stage" onClick=${onClose}><div class="${wrapCls}" style=${{ position:'relative', width:'320px', maxWidth:'86vw' }}>
         <div ref=${glowRef} class="tier-upgrade-glow" style=${{ borderColor: col+'99', opacity: 1, boxShadow: '0 0 26px '+col+'66' }}></div>
         <div class="club-card">
-          <div class="tuh">
-            ${hdr(fromTier, false)}
-            ${hdr(toTier, true)}
-          </div>
-          <div class="tup-sheen"></div>
+          ${style==='shake' && fx==='release' ? html`<div class="tup-flash"></div>` : null}
+          ${style==='polish'
+            ? html`<div class="tuh">${hdr(fromTier,false)}${hdr(toTier,true)}</div>`
+            : html`<div class="tuh">${hdr(showNew?toTier:fromTier, false)}</div>`}
+          ${style==='polish' ? html`<div class="tup-sheen"></div>` : null}
           <div class="card-body">
             <div class="stamp-grid">
-              ${Array.from({length:8},(_,i)=>html`<div class="stamp-slot" key=${i}><${SoyFish} filled=${i===0} /></div>`)}
+              ${Array.from({length:8},(_,i)=>html`<div class="stamp-slot ${stampCls(i)}" key=${i} style=${stampSt(i)}><${SoyFish} filled=${smode==='fresh' ? (i===0) : true} /></div>`)}
             </div>
           </div>
         </div>
       </div></div>`;
     }
     // TANDEM — play the morph and the announcement together, either order.
-    function TierUpTandem({ tier, order, onClose }) {
+    function TierUpTandem({ tier, order, style, onClose }) {
       const [step, setStep] = useState(0);
       if (order === 'AM') {
         return step === 0
           ? html`<${TierUpAfter} tier=${tier} onClose=${() => setStep(1)} />`
-          : html`<${TierUpMorph} tier=${tier} onClose=${onClose} />`;
+          : html`<${TierUpMorph} tier=${tier} style=${style} onClose=${onClose} />`;
       }
       return html`<div>
-        <${TierUpMorph} tier=${tier} onClose=${step===0 ? onClose : (() => {})} onDone=${() => setStep(1)} />
+        <${TierUpMorph} tier=${tier} style=${style} onClose=${step===0 ? onClose : (() => {})} onDone=${() => setStep(1)} />
         ${step===1 ? html`<${TierUpAfter} tier=${tier} onClose=${onClose} />` : null}
       </div>`;
     }
@@ -627,7 +658,8 @@
       const [rstyle, setRstyle] = useState('plate');
       const [rtick, setRtick] = useState('plain');
       const [anim, setAnim] = useState('tierup');
-      const [tuplay, setTuplay] = useState('MA');
+      const [tuplay, setTuplay] = useState('AM');
+      const [mstyle, setMstyle] = useState('polish');
       const [active, setActive] = useState(null);
       const runRef = useRef(0);
       const play = (kind) => { runRef.current += 1; setActive({ kind, run: runRef.current }); };
@@ -641,9 +673,9 @@
         if (k === 'redeem-after') return html`<${AfterRedeemed} key=${'ra'+r} tier=${tier} tickStyle=${rtick} onClose=${close} />`;
         if (k === 'tierup-before') return html`<${TierUpCard} key=${'tub'+r} tier=${tier} onClose=${close} />`;
         if (k === 'tierup-after') {
-          if (tuplay === 'morph') return html`<${TierUpMorph} key=${'tum'+r} tier=${tier} onClose=${close} />`;
+          if (tuplay === 'morph') return html`<${TierUpMorph} key=${'tum'+r+mstyle} tier=${tier} style=${mstyle} onClose=${close} />`;
           if (tuplay === 'announce') return html`<${TierUpAfter} key=${'tua'+r} tier=${tier} onClose=${close} />`;
-          return html`<${TierUpTandem} key=${'tut'+r+tuplay} tier=${tier} order=${tuplay} onClose=${close} />`;
+          return html`<${TierUpTandem} key=${'tut'+r+tuplay+mstyle} tier=${tier} order=${tuplay} style=${mstyle} onClose=${close} />`;
         }
         return null;
       };
@@ -674,6 +706,8 @@
           ` : anim==='tierup' ? html`
             <div class="lab-cap">After plays</div>
             <div class="chiprow">${TU_PLAYS.map(([k, label]) => html`<div key=${k} class="chip ${tuplay===k?'is-on':''}" onClick=${() => setTuplay(k)}>${label}</div>`)}</div>
+            <div class="lab-cap">Morph style</div>
+            <div class="chiprow">${MORPH_STYLES.map(([k, label]) => html`<div key=${k} class="chip ${mstyle===k?'is-on':''}" onClick=${() => setMstyle(k)}>${label}</div>`)}</div>
           ` : null}
           <div class="lab-cap">${anim==='tierup' ? 'Upgrade to' : 'Tier reward'}</div>
           <div class="chiprow">${TIERS.map(t => html`<div key=${t} class="chip ${tier===t?'is-on':''}" onClick=${() => setTier(t)}>${cap(t)}</div>`)}</div>
